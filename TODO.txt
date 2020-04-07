@@ -1,0 +1,35 @@
+Detect trios:
+Idea - Recursive loop starting the middle one going to neighbours 
+
+GIT
+
+Writing a game:
+Step by step - in our case:
+Generate board once (data + render)
+Listen to input.space
+Detect neighbours > mark them > set to 0
+Update board (render) > per cell, SetActive=false if 0
+==> The board will now have empty cells for neighbouring cells
+==> Now we see that the algorithm is ok 
+
+HW - do the animations
+
+Change data grid values to classes 
+
+Fix - initial position by:
+Run
+Move the camera
+Copy component (camera)
+Stop
+Paste values (camera)
+
+See tiles game ==> make the tiles according to screen size
+
+Animations:
+Each CellView knows if it's animating
+In the BoardManager Update function => traverse cells and ask them if they finished animating
+When animation finishes, run detect trios again
+
+OR
+
+Use coroutines
