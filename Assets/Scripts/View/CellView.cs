@@ -71,7 +71,7 @@ public class CellView : MonoBehaviour
 
         hash.Add("x", scale);
         hash.Add("y", scale);
-        hash.Add("easeType", "easeInOut");
+        hash.Add("easeType", "easeOutSine");
         hash.Add("time", 0.4);
         hash.Add("oncomplete", "OnCompleteAnimation");
         iTween.ScaleBy(gameObject, hash);
