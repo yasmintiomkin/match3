@@ -19,10 +19,10 @@ public class BoardViewManager : MonoBehaviour
 
         viewGrid = new CellView[width, height];
 
-        ConfigureEmptyBoardCells();
+        PrepareBoardCells();
     }
 
-    private void ConfigureEmptyBoardCells()
+    private void PrepareBoardCells()
     {
         int offsetX = width / 2;
         int offsetY = height / 2;
@@ -40,60 +40,51 @@ public class BoardViewManager : MonoBehaviour
                     view.Init(dataGrid[x, y]);
                 }
 
-                viewGrid[x, y].SetSprite();
+                viewGrid[x, y].PerformAction();
             }
         }
     }
 
-    public IEnumerator MarkEqualAdjacent()
+    public IEnumerator PerformAction()
     {
-        Debug.Log("bvm MarkEqualAdjacent 1");
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                if (dataGrid[x, y].IsEmpty())
-                {
-                    viewGrid[x, y].SetSprite();
-                }
+                    viewGrid[x, y].PerformAction();
             }
         }
-        Debug.Log("bvm MarkEqualAdjacent 2");
 
         // return control only when all animations have completed
         bool continueLooping = true;
         int count = 0;
-        do
+        while (continueLooping) 
         {
-            bool foundAnimating = false;
+            // wait one frame
+            yield return null;
+
+            continueLooping = false;
+
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
                     if (viewGrid[x, y].isAnimating)
                     {
-                        foundAnimating = true;
+                        continueLooping = true;
                         break;
                     }
                 }
 
-                if (foundAnimating)
+                if (continueLooping)
                 {
                     break; // no need to go over the rest of the x values. 
                 }
             }
 
-            continueLooping = !foundAnimating;
-
-            if (continueLooping)
-            {
-                // wait one frame
-                yield return null;
-                count++;
-                Debug.Log("bvm MarkEqualAdjacent continuelooping - " + count);
-
-            }
-        } while (continueLooping);
+            count++;
+            Debug.Log("bvm MarkEqualAdjacent continuelooping - " + count);
+        } 
 
         Debug.Log("bvm MarkEqualAdjacent 3");
 
@@ -105,10 +96,10 @@ public class BoardViewManager : MonoBehaviour
         {
             for (int y = 0; y < height; y++)
             {
-                if (dataGrid[x, y].fallHeight > 0)
-                {
-                    viewGrid[x, y].SetSprite();
-                }
+                //if (dataGrid[x, y].fallHeight > 0)
+                //{
+                    viewGrid[x, y].PerformAction();
+                //}
             }
         }
     }

@@ -1,10 +1,4 @@
-﻿using UnityEngine;
-using UnityEditor;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-
+﻿
 public class GameLogicBoardData
 {
     public CellData[,] dataGrid;
@@ -20,10 +14,10 @@ public class GameLogicBoardData
 
         dataGrid = new CellData[width, height]; 
 
-        ConfigureEmptyBoardCells();
+        PrepareBoardCells();
     }
 
-    public void ConfigureEmptyBoardCells()
+    public void PrepareBoardCells()
     {
         for (int x = 0; x < width; x++)
         {
@@ -34,12 +28,8 @@ public class GameLogicBoardData
                     dataGrid[x, y] = new CellData();
                 }
 
-                if (dataGrid[x, y].IsEmpty())
-                {
-                    dataGrid[x, y].PrepareForReuse();
-                    dataGrid[x, y].spriteId =  SpriteGenerator();
-                }
-                // else configured
+                dataGrid[x, y].PrepareForReuse();
+                dataGrid[x, y].spriteId = SpriteGenerator();
             }
         }
     }
@@ -49,8 +39,21 @@ public class GameLogicBoardData
         return UnityEngine.Random.Range(1, 4);
     }
 
+    private void PrepareForAction()
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                dataGrid[x, y].PrepareForAction();
+            }
+        }
+    }
+
     public bool MarkEqualAdjacent()
     {
+        PrepareForAction();
+
         bool isDetected = false;
         int numEqual;
 
@@ -125,6 +128,7 @@ public class GameLogicBoardData
                 if (dataGrid[x, y].isMatchAdjacent)
                 {
                     dataGrid[x, y].SetEmpty();
+                    dataGrid[x, y].displayAction = CellData.DisplayAction.animateDestroy;
                 }
             }
         }
@@ -160,7 +164,9 @@ public class GameLogicBoardData
 
     public void FillEmpty()
     {
-         for (int x = 0; x < width; x++)
+        PrepareForAction();
+
+        for (int x = 0; x < width; x++)
         {
             FillEmptyInColumn(x);
         }
@@ -189,8 +195,9 @@ public class GameLogicBoardData
                     // drop it down to the first empty cell
                     dataGrid[x, firstEmptyY].spriteId = dataGrid[x, y].spriteId;
                     dataGrid[x, firstEmptyY].fallHeight = firstEmptyY - y;
+                    dataGrid[x, firstEmptyY].displayAction = CellData.DisplayAction.animateFall;
                     dataGrid[x, y].SetEmpty();
- 
+
                     // now firstEmptyY is one above 
                     firstEmptyY--;
                 }
@@ -214,6 +221,7 @@ public class GameLogicBoardData
             {
                 dataGrid[x, yTop].fallHeight = topCellsDrop;
                 dataGrid[x, yTop].spriteId = SpriteGenerator();
+                dataGrid[x, yTop].displayAction = CellData.DisplayAction.animateFall;
             }
         }
     }

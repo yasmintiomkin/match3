@@ -2,15 +2,31 @@
 
 public class CellData
 {
+    public bool animateAction;
+
     public int spriteId;
     public bool isMatchAdjacent;
     public int fallHeight;
 
+    public  enum DisplayAction { generateSprite, animateDestroy, animateFall, none }
+
+    public DisplayAction displayAction = DisplayAction.generateSprite;
+
     public void PrepareForReuse()
     {
+        animateAction = false;
+
         spriteId = 0;
         isMatchAdjacent = false;
         fallHeight = 0;
+        displayAction = DisplayAction.generateSprite;
+    }
+
+    public void PrepareForAction()
+    {
+        isMatchAdjacent = false;
+        fallHeight = 0;
+        displayAction = DisplayAction.none;
     }
 
     public bool IsEmpty()
@@ -21,11 +37,6 @@ public class CellData
     public void SetEmpty()
     {
         spriteId = 0;
-        isMatchAdjacent = false;
-    }
-
-    public bool ShouldDrop()
-    {
-        return fallHeight > 0;
+        displayAction = DisplayAction.generateSprite;
     }
 }

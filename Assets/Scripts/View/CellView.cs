@@ -18,37 +18,57 @@ public class CellView : MonoBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
-    public void SetSprite()
+    public void PerformAction()
     {
         int spriteIndex = cellData.spriteId - 1;
-        if (spriteIndex < 0 || spriteIndex > spriteList.Count - 1)
-        {
-            AnimateDestroy();
-        }
-        else
-        {
-            if (scale < 1.0f)
-            {
-                gameObject.transform.localScale = Vector3.one;
-            }
-           
-            Sprite newSprite = spriteList[spriteIndex];
-            spriteRenderer.sprite = newSprite;
 
-            if (cellData.fallHeight > 0)
-            {
+        switch (cellData.displayAction)
+        {
+            case CellData.DisplayAction.none:
+                break;
+
+            case CellData.DisplayAction.generateSprite:
+                GenerateSprite();
+                break;
+
+            case CellData.DisplayAction.animateDestroy:
+                AnimateDestroy();
+                break;
+
+            case CellData.DisplayAction.animateFall:
+                GenerateSprite();
                 AnimateFall();
-            }
+                break;
+
         }
+    }
+
+    private void GenerateSprite()
+    {
+        int spriteIndex = cellData.spriteId - 1;
+
+        if (scale < 1.0f)
+        {
+            gameObject.transform.localScale = Vector3.one;
+        }
+
+        Sprite newSprite = spriteList[spriteIndex];
+        spriteRenderer.sprite = newSprite;
     }
 
     private void AnimateDestroy()
     {
+        if (!cellData.animateAction)
+        {
+            return;
+        }
+
         isAnimating = true;
+
+        scale = 0f;
 
         Hashtable hash = new Hashtable();
 
-        scale = 0f;
         hash.Add("x", scale);
         hash.Add("y", scale);
         hash.Add("easeType", "easeInOutExpo");
@@ -59,6 +79,11 @@ public class CellView : MonoBehaviour
 
     private void AnimateFall()
     {
+        if (!cellData.animateAction)
+        {
+            return;
+        }
+
         isAnimating = true;
 
         float origY = transform.position.y;
@@ -68,7 +93,16 @@ public class CellView : MonoBehaviour
 
         // animate drop to destination
         float fallDuration = 1;// cellData.fallHeight * 0.5f; // proportional to drop height
-        iTween.MoveTo(gameObject, new Vector3(transform.position.x, origY, transform.position.z), fallDuration);
+       
+        Hashtable hash = new Hashtable();
+
+        hash.Add("x", transform.position.x);
+        hash.Add("y", origY);
+        // transform.position.z
+        //hash.Add("easeType", "easeInOutExpo");
+        hash.Add("time", fallDuration);
+        hash.Add("oncomplete", "OnCompleteAnimation");
+        iTween.MoveTo(gameObject, hash);
     }
 
     private void OnCompleteAnimation()

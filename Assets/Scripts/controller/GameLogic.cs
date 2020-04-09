@@ -15,9 +15,6 @@ public class GameLogic : MonoBehaviour
     [SerializeField]
     private int minAdjacent2Win = 3;
 
-    //private GameLogicConfigure gameLogicConfigure;
-    //private GameLogicSelect gameLogicSelect;
-
     private GameLogicBoardData boardData;
 
     private Vector2Int selectedPosition1, selectedPosition2;
@@ -32,9 +29,6 @@ public class GameLogic : MonoBehaviour
         boardData.PrepareForReuse(gridWidth, gridHeight, minAdjacent2Win);
 
         boardViewManager.PrepareForReuse(boardData.dataGrid);
-
-        // gameLogicConfigure = new GameLogicConfigure(gridWidth, gridHeight, minAdjacent2Win, boardViewManager);
-        // gameLogicSelect = new GameLogicSelect(gridWidth, gridHeight, gameLogicConfigure.dataGrid, boardViewManager);
     }
 
     public void Update()
@@ -50,14 +44,12 @@ public class GameLogic : MonoBehaviour
     public IEnumerator EvaluateBoard()
     {
         bool isAdjacentExist = boardData.MarkEqualAdjacent();
-        if (isAdjacentExist)
+        while (isAdjacentExist)
         {
-            yield return StartCoroutine(boardViewManager.MarkEqualAdjacent());
-            yield return new WaitForSeconds(1);
-
-            Debug.Log("after coroutine");
+            yield return StartCoroutine(boardViewManager.PerformAction());
             boardData.FillEmpty();
-            boardViewManager.FillEmpty();
+            yield return StartCoroutine(boardViewManager.PerformAction());
+            isAdjacentExist = boardData.MarkEqualAdjacent();
         }
     }
 
