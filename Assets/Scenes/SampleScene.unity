@@ -278,9 +278,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boardViewManager: {fileID: 577457055}
-  gridWidth: 5
-  gridHeight: 8
-  minAdjacent2Win: 3
+  gridWidth: 3
+  gridHeight: 3
+  minAdjacent2Win: 2
 --- !u!4 &1336721410
 Transform:
   m_ObjectHideFlags: 0

@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using System.Collections;
 
 public class GameLogic : MonoBehaviour
 {
@@ -17,7 +18,7 @@ public class GameLogic : MonoBehaviour
     //private GameLogicConfigure gameLogicConfigure;
     //private GameLogicSelect gameLogicSelect;
 
-    private GameLogicBoardPlay boardPlay;
+    private GameLogicBoardData boardData;
 
     private Vector2Int selectedPosition1, selectedPosition2;
 
@@ -27,25 +28,40 @@ public class GameLogic : MonoBehaviour
         selectedPosition1 = new Vector2Int(-1, -1);
         selectedPosition2 = new Vector2Int(-1, -1);
 
-        boardPlay = new GameLogicBoardPlay();
-        boardPlay.PrepareForReuse(gridWidth, gridHeight, minAdjacent2Win);
+        boardData = new GameLogicBoardData();
+        boardData.PrepareForReuse(gridWidth, gridHeight, minAdjacent2Win);
 
-        boardViewManager.PrepareForReuse(boardPlay.dataGrid);
+        boardViewManager.PrepareForReuse(boardData.dataGrid);
 
-       // gameLogicConfigure = new GameLogicConfigure(gridWidth, gridHeight, minAdjacent2Win, boardViewManager);
-       // gameLogicSelect = new GameLogicSelect(gridWidth, gridHeight, gameLogicConfigure.dataGrid, boardViewManager);
+        // gameLogicConfigure = new GameLogicConfigure(gridWidth, gridHeight, minAdjacent2Win, boardViewManager);
+        // gameLogicSelect = new GameLogicSelect(gridWidth, gridHeight, gameLogicConfigure.dataGrid, boardViewManager);
     }
 
     public void Update()
     {
-        if (boardPlay == null) return;
+        if (boardData == null) return;
 
         if (Input.GetMouseButtonDown(0))
         {
-            boardPlay.MarkEqualAdjacent();
-            boardViewManager.MarkEqualAdjacent();
+            StartCoroutine(EvaluateBoard());
         }
     }
+
+    public IEnumerator EvaluateBoard()
+    {
+        bool isAdjacentExist = boardData.MarkEqualAdjacent();
+        if (isAdjacentExist)
+        {
+            yield return StartCoroutine(boardViewManager.MarkEqualAdjacent());
+            yield return new WaitForSeconds(1);
+
+            Debug.Log("after coroutine");
+            boardData.FillEmpty();
+            boardViewManager.FillEmpty();
+        }
+    }
+
+
 
     //public void Update()
     //{

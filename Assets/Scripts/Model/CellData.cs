@@ -4,15 +4,13 @@ public class CellData
 {
     public int spriteId;
     public bool isMatchAdjacent;
-    public bool isAnimating;
-    public int dropHeight;
+    public int fallHeight;
 
     public void PrepareForReuse()
     {
         spriteId = 0;
         isMatchAdjacent = false;
-        isAnimating = false;
-        dropHeight = 0;
+        fallHeight = 0;
     }
 
     public bool IsEmpty()
@@ -24,5 +22,10 @@ public class CellData
     {
         spriteId = 0;
         isMatchAdjacent = false;
+    }
+
+    public bool ShouldDrop()
+    {
+        return fallHeight > 0;
     }
 }

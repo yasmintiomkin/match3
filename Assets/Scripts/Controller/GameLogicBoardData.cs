@@ -1,7 +1,11 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-public class GameLogicBoardPlay
+
+public class GameLogicBoardData
 {
     public CellData[,] dataGrid;
     public int width, height;
@@ -33,11 +37,16 @@ public class GameLogicBoardPlay
                 if (dataGrid[x, y].IsEmpty())
                 {
                     dataGrid[x, y].PrepareForReuse();
-                    dataGrid[x, y].spriteId = UnityEngine.Random.Range(1, 4);
+                    dataGrid[x, y].spriteId =  SpriteGenerator();
                 }
                 // else configured
             }
         }
+    }
+
+    private int SpriteGenerator()
+    {
+        return UnityEngine.Random.Range(1, 4);
     }
 
     public bool MarkEqualAdjacent()
@@ -137,7 +146,7 @@ public class GameLogicBoardPlay
     {
         for (int x = endIndex; x > endIndex - numAdjacent; x--)
         {
-             dataGrid[x, y].isMatchAdjacent = true;
+            dataGrid[x, y].isMatchAdjacent = true;
         }
     }
 
@@ -146,6 +155,66 @@ public class GameLogicBoardPlay
         for (int y = endIndex; y > endIndex - numAdjacent; y--)
         {
             dataGrid[x, y].isMatchAdjacent = true;
+        }
+    }
+
+    public void FillEmpty()
+    {
+         for (int x = 0; x < width; x++)
+        {
+            FillEmptyInColumn(x);
+        }
+    }
+
+
+    private void FillEmptyInColumn(int x)
+    {
+        // go over column bottom up and calculate the number of cells each cell needs to drop
+        
+        int firstEmptyY = -1;
+        for (int y = height - 1; y >= 0; y--)
+        {
+            if (dataGrid[x, y].IsEmpty())
+            {
+                if (firstEmptyY < 0)
+                {
+                    firstEmptyY = y;
+                }
+             }
+            else
+            {
+                if (firstEmptyY >= 0)
+                {
+                    // we're at a non-empty cell with previous empty cells
+                    // drop it down to the first empty cell
+                    dataGrid[x, firstEmptyY].spriteId = dataGrid[x, y].spriteId;
+                    dataGrid[x, firstEmptyY].fallHeight = firstEmptyY - y;
+                    dataGrid[x, y].SetEmpty();
+ 
+                    // now firstEmptyY is one above 
+                    firstEmptyY--;
+                }
+            }
+        }
+
+        // fill top empty cells
+        if (dataGrid[x, 0].IsEmpty())
+        {
+            if (firstEmptyY < 0)
+            {
+                // if the top cell is the only empty cell
+                // then firstEmptyY is -1 so correct it
+                firstEmptyY = 0;
+            }
+
+            // all top cells drop the same height since they 
+            // fall from above
+            int topCellsDrop = firstEmptyY + 1;
+            for (int yTop = firstEmptyY; yTop >= 0; yTop--)
+            {
+                dataGrid[x, yTop].fallHeight = topCellsDrop;
+                dataGrid[x, yTop].spriteId = SpriteGenerator();
+            }
         }
     }
 }
