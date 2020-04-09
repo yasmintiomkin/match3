@@ -71,8 +71,8 @@ public class CellView : MonoBehaviour
 
         hash.Add("x", scale);
         hash.Add("y", scale);
-        hash.Add("easeType", "easeInOutExpo");
-        hash.Add("time", 1);
+        hash.Add("easeType", "easeInOut");
+        hash.Add("time", 0.4);
         hash.Add("oncomplete", "OnCompleteAnimation");
         iTween.ScaleBy(gameObject, hash);
     }
@@ -92,14 +92,14 @@ public class CellView : MonoBehaviour
         transform.position = new Vector3(transform.position.x, transform.position.y + cellData.fallHeight, transform.position.z);
 
         // animate drop to destination
-        float fallDuration = 1;// cellData.fallHeight * 0.5f; // proportional to drop height
+        float fallDuration = 0.6f;// cellData.fallHeight * 0.4f; // proportional to drop height
        
         Hashtable hash = new Hashtable();
 
         hash.Add("x", transform.position.x);
         hash.Add("y", origY);
         // transform.position.z
-        //hash.Add("easeType", "easeInOutExpo");
+        hash.Add("easeType", "easeOutElastic");
         hash.Add("time", fallDuration);
         hash.Add("oncomplete", "OnCompleteAnimation");
         iTween.MoveTo(gameObject, hash);

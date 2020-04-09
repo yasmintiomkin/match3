@@ -14,7 +14,7 @@ public class CellData
 
     public void PrepareForReuse()
     {
-        animateAction = false;
+        animateAction = true;
 
         spriteId = 0;
         isMatchAdjacent = false;
