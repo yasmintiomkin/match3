@@ -1,31 +1,34 @@
 ﻿using UnityEngine;
+using ExtensionMethods;
 
 public class CellData
 {
-    public bool animateAction;
-
     public int spriteId;
     public bool isMatchAdjacent;
-    public int fallHeight;
+    public int fallDistance;
+    public Vector2Int moveDistance;
 
-    public  enum DisplayAction { generateSprite, animateDestroy, animateFall, none }
+    public enum DisplayAction { generateSprite, animateDestroy, animateFall, animateMove, animateSelect, animateUnselect, none }
 
+    public bool animateDisplayAction;
     public DisplayAction displayAction = DisplayAction.generateSprite;
 
     public void PrepareForReuse()
     {
-        animateAction = true;
+        animateDisplayAction = false;
 
         spriteId = 0;
         isMatchAdjacent = false;
-        fallHeight = 0;
+        fallDistance = 0;
+        moveDistance = new Vector2Int(0, 0);
         displayAction = DisplayAction.generateSprite;
     }
 
     public void PrepareForAction()
     {
         isMatchAdjacent = false;
-        fallHeight = 0;
+        fallDistance = 0;
+        moveDistance = new Vector2Int(0, 0);
         displayAction = DisplayAction.none;
     }
 

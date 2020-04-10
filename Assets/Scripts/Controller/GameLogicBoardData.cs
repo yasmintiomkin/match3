@@ -1,4 +1,5 @@
-﻿
+﻿using UnityEngine;
+
 public class GameLogicBoardData
 {
     public CellData[,] dataGrid;
@@ -34,9 +35,20 @@ public class GameLogicBoardData
         }
     }
 
+    public void SetAnimateDisplayAction(bool isActive)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                dataGrid[x, y].animateDisplayAction = isActive;
+            }
+        }
+    }
+
     private int SpriteGenerator()
     {
-        return UnityEngine.Random.Range(1, 4);
+        return UnityEngine.Random.Range(2, 6);
     }
 
     private void PrepareForAction()
@@ -50,7 +62,37 @@ public class GameLogicBoardData
         }
     }
 
-    public bool MarkEqualAdjacent()
+    public bool SwitchCells(Vector2Int position1, Vector2Int position2)
+    {
+        PrepareForAction();
+
+        int val1 = dataGrid[position1.x, position1.y].spriteId;
+        int val2 = dataGrid[position2.x, position2.y].spriteId;
+
+        // switch values without switching display
+        dataGrid[position1.x, position1.y].spriteId = val2;
+        dataGrid[position2.x, position2.y].spriteId = val1;
+
+        bool isAdjacentExist = MarkEqualAdjacent(true);
+
+        if (isAdjacentExist)
+        {
+            dataGrid[position1.x, position1.y].moveDistance = position2 - position1;
+            dataGrid[position1.x, position1.y].displayAction = CellData.DisplayAction.animateMove;
+            dataGrid[position2.x, position2.y].moveDistance = position1 - position2;
+            dataGrid[position2.x, position2.y].displayAction = CellData.DisplayAction.animateMove;
+
+            return true;
+        }
+        else
+        {
+            // switch back
+            dataGrid[position1.x, position1.y].spriteId = val1;
+            dataGrid[position2.x, position2.y].spriteId = val2;
+            return false;
+        }
+    }
+    public bool MarkEqualAdjacent(bool isSimulation)
     {
         PrepareForAction();
 
@@ -73,6 +115,8 @@ public class GameLogicBoardData
                 {
                     if (numEqual >= minAdjacent2Win)
                     {
+                        if (isSimulation) return true;
+
                         isDetected = true;
                         MarkAdjacentRowCells(x - 1, y, numEqual);
                     }
@@ -83,6 +127,8 @@ public class GameLogicBoardData
                 // if last x cell, check again
                 if (x == width - 1 && numEqual >= minAdjacent2Win)
                 {
+                    if (isSimulation) return true;
+
                     isDetected = true;
                     MarkAdjacentRowCells(x, y, numEqual);
                 }
@@ -105,6 +151,8 @@ public class GameLogicBoardData
                 {
                     if (numEqual >= minAdjacent2Win)
                     {
+                        if (isSimulation) return true;
+
                         isDetected = true;
                         MarkAdjacentColumnCells(x, y - 1, numEqual);
                     }
@@ -115,6 +163,8 @@ public class GameLogicBoardData
                 // if last y cell, check again
                 if (y == height - 1 && numEqual >= minAdjacent2Win)
                 {
+                    if (isSimulation) return true;
+
                     isDetected = true;
                     MarkAdjacentColumnCells(x, y, numEqual);
                 }
@@ -194,7 +244,7 @@ public class GameLogicBoardData
                     // we're at a non-empty cell with previous empty cells
                     // drop it down to the first empty cell
                     dataGrid[x, firstEmptyY].spriteId = dataGrid[x, y].spriteId;
-                    dataGrid[x, firstEmptyY].fallHeight = firstEmptyY - y;
+                    dataGrid[x, firstEmptyY].fallDistance = firstEmptyY - y;
                     dataGrid[x, firstEmptyY].displayAction = CellData.DisplayAction.animateFall;
                     dataGrid[x, y].SetEmpty();
 
@@ -219,7 +269,7 @@ public class GameLogicBoardData
             int topCellsDrop = firstEmptyY + 1;
             for (int yTop = firstEmptyY; yTop >= 0; yTop--)
             {
-                dataGrid[x, yTop].fallHeight = topCellsDrop;
+                dataGrid[x, yTop].fallDistance = topCellsDrop;
                 dataGrid[x, yTop].spriteId = SpriteGenerator();
                 dataGrid[x, yTop].displayAction = CellData.DisplayAction.animateFall;
             }

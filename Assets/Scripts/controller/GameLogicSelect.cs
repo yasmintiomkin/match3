@@ -1,87 +1,114 @@
 ﻿using System;
 using UnityEngine;
+using ExtensionMethods;
 
 public class GameLogicSelect
 {
-    public int[,] dataGrid;
-    public int width, height;
     public BoardViewManager boardViewManager;
+    public CellData[,] dataGrid;
+    public int width, height;
 
-    private bool ignoreOnUpdate;
+    public enum Status { noneSelected, oneSelected, sameSelected, twoAdjacent, twoNotAdjacent }
+
     public Vector2Int selectedPosition1, selectedPosition2;
 
-    /*
-    public GameLogicSelect(int width, int height, int[,] dataGrid, BoardViewManager boardViewManager)
+
+    public void PrepareForReuse(CellData[,] dataGrid, BoardViewManager boardViewManager)
     {
-        this.width = width;
-        this.height = height;
         this.dataGrid = dataGrid;
+        width = dataGrid.GetLength(0);
+        height = dataGrid.GetLength(1);
+
         this.boardViewManager = boardViewManager;
+
+        selectedPosition1 = new Vector2Int(-1, -1);
+        selectedPosition2 = new Vector2Int(-1, -1);
 
         Reset();
     }
 
     public void Reset()
     {
-        selectedPosition1 = new Vector2Int(-1, -1);
-        selectedPosition2 = new Vector2Int(-1, -1);
-        ignoreOnUpdate = false;
+        if (selectedPosition1.IsSet())
+        {
+            dataGrid[selectedPosition1.x, selectedPosition1.y].displayAction = CellData.DisplayAction.none;
+        }
+
+        if (selectedPosition2.IsSet())
+        {
+            dataGrid[selectedPosition2.x, selectedPosition2.y].displayAction = CellData.DisplayAction.none;
+        }
+
+        selectedPosition1.UnSet();
+        selectedPosition2.UnSet();
     }
 
-    public bool IsAdjacentSelected(ref Vector2Int position1, ref Vector2Int position2)
-    {
-        //if (ignoreOnUpdate) return false;
+   public Status UpdateSelectedStatusOnMouseButtonDown()
+   {
+        bool isSelected = false;
+        Vector2Int selectedPosition = boardViewManager.GetSelectedPosition(ref isSelected);
+        if (!isSelected) return Status.noneSelected;
 
-        Vector2Int selectedPosition = boardViewManager.GetSelectedPosition();
-        if (selectedPosition.x < 0) return false; // no selection identified
-
-        if (selectedPosition1.x < 0) // not set
+        if (!selectedPosition1.IsSet())
         {
             selectedPosition1 = selectedPosition;
+            dataGrid[selectedPosition1.x, selectedPosition1.y].displayAction = CellData.DisplayAction.animateSelect;
+            Debug.Log(string.Format("SELECT one"));
+            return Status.oneSelected;
         }
         else
         {
-            if (IsEqual(selectedPosition, selectedPosition1)) return false;
-            // TODO: same point selection. maybe unselect?
-            
-            ignoreOnUpdate = true;
+            if (selectedPosition.Equals(selectedPosition1))
+            {
+                // if same cell was selected, unselect it
+                dataGrid[selectedPosition1.x, selectedPosition1.y].displayAction = CellData.DisplayAction.animateUnselect;
+                Debug.Log(string.Format("SELECT same"));
+                return Status.sameSelected;
+            }
+
+            // a new cell was selected
             selectedPosition2 = selectedPosition;
 
             // check if the positions are adjacent
-            if (IsAdjacent(selectedPosition1, selectedPosition2))
+            if (selectedPosition1.IsAdjacent(selectedPosition2))
             {
-                Debug.Log(string.Format("IS adjacent"));
-                // TODO: animate switch and switch back
-                position1 = selectedPosition1;
-                position2 = selectedPosition2;
-                Reset();
-                return true;
+                dataGrid[selectedPosition1.x, selectedPosition1.y].displayAction = CellData.DisplayAction.none;
+                //dataGrid[selectedPosition2.x, selectedPosition2.y].displayAction = CellData.DisplayAction.animateSelect;
+                Debug.Log(string.Format("SELECT two IS adjacent"));
+                return Status.twoAdjacent;
             }
             else
             {
-                // TODO: switch and recalculate
-                // if no results then switch back
-                Debug.Log(string.Format("NOT adjacent"));
-                Reset();
-                return false;
+                dataGrid[selectedPosition1.x, selectedPosition1.y].displayAction = CellData.DisplayAction.animateUnselect;
+                dataGrid[selectedPosition2.x, selectedPosition2.y].displayAction = CellData.DisplayAction.none;
+                Debug.Log(string.Format("SELECT two NOT adjacent"));
+                return Status.twoNotAdjacent;
             }
         }
-
-        return false;
     }
+}
 
-    private bool IsEqual(Vector2Int position1, Vector2Int position2)
+namespace ExtensionMethods
+{
+    public static class Vector2IntExtensions
     {
-        return position1.x == position2.x && position1.y == position2.y;
-    }
+        public static void UnSet(this ref Vector2Int vector)
+        {
+            vector.x = -1;
+            vector.y = -1;
+        }
 
-    private bool IsAdjacent(Vector2Int position1, Vector2Int position2)
-    {
-        // diagonal is OK
-        int diffX = Math.Abs(position1.x - position2.x);
-        int diffY = Math.Abs(position1.y - position2.y);
-        return diffX <= 1 && diffY <= 1;
-        //return (position1 - position2).magnitude > 1.0; // we don't mess with float. also the user can select the same point
+        public static bool IsSet(this Vector2Int vector)
+        {
+            return vector.x >= 0;
+        }
+
+        public static bool IsAdjacent(this Vector2Int position1, Vector2Int position2)
+        {
+            // diagonal is OK
+            int diffX = Math.Abs(position1.x - position2.x);
+            int diffY = Math.Abs(position1.y - position2.y);
+            return diffX <= 1 && diffY <= 1;
+        }
     }
-    */
 }
