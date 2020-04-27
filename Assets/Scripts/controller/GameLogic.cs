@@ -32,8 +32,6 @@ public class GameLogic : MonoBehaviour
         boardSelect.PrepareForReuse(boardData.dataGrid, boardViewManager);
 
         StartCoroutine(PrepareForReuse());
-
-        isSelectActive = true;
     }
 
     public IEnumerator PrepareForReuse()
@@ -41,6 +39,8 @@ public class GameLogic : MonoBehaviour
         yield return StartCoroutine(EvaluateBoard());
 
         boardData.SetAnimateDisplayAction(true);
+
+        isSelectActive = true;
     }
 
     public void Update()
